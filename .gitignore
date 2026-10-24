@@ -1,17 +1,17 @@
-   # Python
-   venv/
-   __pycache__/
-   *.pyc
+# Python
+venv/
+__pycache__/
+*.pyc
 
-   # Node
-   node_modules/
-   dist/
+# Node
+node_modules/
+dist/
 
-   # Secrets
-   .env
+# Secrets
+.env
 
-   # Database file (local)
-   *.db
+# Database file (local)
+*.db
 
-   # Editor
-   .vscode/
+# Editor
+.vscode/

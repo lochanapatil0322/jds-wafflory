@@ -81,3 +81,10 @@ class OrderOut(BaseModel):
     items: list[OrderLineOut]
     parcel_charge: int
     total: int
+class OrderStatusUpdate(BaseModel):
+    status: Literal["preparing", "ready", "completed", "cancelled"]
+
+
+class AdminOrderOut(OrderOut):
+    branch_id: int
+    customer_phone: str

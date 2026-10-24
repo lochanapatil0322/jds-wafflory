@@ -2,13 +2,14 @@ from fastapi import FastAPI
 
 from .database import Base, engine
 from . import models  # noqa: F401
-from .routers import menu
+from .routers import menu, orders
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="JD's Wafflory API")
 
 app.include_router(menu.router)
+app.include_router(orders.router)
 
 
 @app.get("/")

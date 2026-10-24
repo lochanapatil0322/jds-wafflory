@@ -88,6 +88,8 @@ class Order(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     items: Mapped[list["OrderItem"]] = relationship(back_populates="order")
+    items: Mapped[list["OrderItem"]] = relationship(back_populates="order")
+    branch: Mapped["Branch"] = relationship()
 
 
 class OrderItem(Base):
@@ -101,3 +103,6 @@ class OrderItem(Base):
     unit_price: Mapped[int] = mapped_column(Integer)  # price at the time of order
 
     order: Mapped["Order"] = relationship(back_populates="items")
+    order: Mapped["Order"] = relationship(back_populates="items")
+    item: Mapped["Item"] = relationship()
+    variant: Mapped["ItemVariant"] = relationship()

@@ -1,0 +1,17 @@
+   # Python
+   venv/
+   __pycache__/
+   *.pyc
+
+   # Node
+   node_modules/
+   dist/
+
+   # Secrets
+   .env
+
+   # Database file (local)
+   *.db
+
+   # Editor
+   .vscode/

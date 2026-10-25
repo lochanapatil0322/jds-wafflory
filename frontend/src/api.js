@@ -1,9 +1,40 @@
 import axios from 'axios'
 
+export const AUTH_KEY = 'adminAuth'
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000',
 })
 
+// The login token is kept in memory here and sent with every request
+let authToken = null
+export const setAuthToken = (token) => {
+  authToken = token
+}
+
+api.interceptors.request.use((config) => {
+  if (authToken) config.headers.Authorization = `Bearer ${authToken}`
+  return config
+})
+
+// If the server says our token is no good, log out and go back to the login page
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && authToken) {
+      authToken = null
+      try {
+        localStorage.removeItem(AUTH_KEY)
+      } catch {
+        // storage can be blocked; nothing to clean up then
+      }
+      window.location.assign('/admin')
+    }
+    return Promise.reject(error)
+  },
+)
+
+// ---------- Customer ----------
 export const getBranches = () => api.get('/branches').then((res) => res.data)
 
 export const getMenu = (branchId) =>
@@ -13,5 +44,13 @@ export const placeOrder = (order) => api.post('/orders', order).then((res) => re
 
 export const trackOrder = (orderId, phone) =>
   api.get(`/orders/${orderId}`, { params: { phone } }).then((res) => res.data)
+
+// ---------- Owner and staff ----------
+// The backend login expects a form with the fields "username" and "password".
+// We use the phone number as the username.
+export const login = (phone, password) =>
+  api.post('/auth/login', new URLSearchParams({ username: phone, password })).then((res) => res.data)
+
+export const getMe = () => api.get('/auth/me').then((res) => res.data)
 
 export default api

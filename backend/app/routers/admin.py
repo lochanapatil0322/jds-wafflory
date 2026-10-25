@@ -3,6 +3,9 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, selectinload
 
+from datetime import date, datetime, timedelta
+from sqlalchemy import func
+from ..utils import now_ist
 from .. import models, schemas
 from ..database import get_db
 from ..deps import require_roles
@@ -238,3 +241,70 @@ def update_item(
     db.commit()
     db.refresh(item)
     return to_item_out(item, db)
+
+# ---------- Reports ----------
+
+@router.get("/reports/daily", response_model=schemas.DailyReport)
+def daily_report(
+    day: date | None = None,
+    user: models.User = Depends(require_roles("owner")),
+    db: Session = Depends(get_db),
+):
+    day = day or now_ist().date()
+    start = datetime.combine(day, datetime.min.time())
+    end = start + timedelta(days=1)
+
+    orders = (
+        db.query(models.Order)
+        .filter(models.Order.created_at >= start, models.Order.created_at < end)
+        .all()
+    )
+    counted = [o for o in orders if o.status != "cancelled"]
+
+    total_sales = sum(o.total for o in counted)
+    paid_amount = sum(o.total for o in counted if o.payment_status == "paid")
+
+    branch_rows = []
+    for branch in db.query(models.Branch).order_by(models.Branch.id):
+        mine = [o for o in counted if o.branch_id == branch.id]
+        branch_rows.append(
+            schemas.BranchSales(
+                branch_id=branch.id,
+                branch_name=branch.name,
+                orders=len(mine),
+                sales=sum(o.total for o in mine),
+            )
+        )
+
+    quantity = func.sum(models.OrderItem.quantity)
+    sales = func.sum(models.OrderItem.quantity * models.OrderItem.unit_price)
+    top_rows = (
+        db.query(models.Item.name, quantity, sales)
+        .join(models.OrderItem, models.OrderItem.item_id == models.Item.id)
+        .join(models.Order, models.Order.id == models.OrderItem.order_id)
+        .filter(
+            models.Order.created_at >= start,
+            models.Order.created_at < end,
+            models.Order.status != "cancelled",
+        )
+        .group_by(models.Item.id, models.Item.name)
+        .order_by(quantity.desc(), sales.desc())
+        .limit(5)
+        .all()
+    )
+
+    return schemas.DailyReport(
+        report_date=day,
+        orders=len(counted),
+        cancelled_orders=len(orders) - len(counted),
+        total_sales=total_sales,
+        paid_amount=paid_amount,
+        unpaid_amount=total_sales - paid_amount,
+        dine_in_orders=sum(1 for o in counted if o.order_type == "dine_in"),
+        parcel_orders=sum(1 for o in counted if o.order_type == "parcel"),
+        branches=branch_rows,
+        top_items=[
+            schemas.TopItem(item_name=name, quantity=int(q), sales=int(s))
+            for name, q, s in top_rows
+        ],
+    )

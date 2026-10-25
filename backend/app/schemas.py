@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import date, datetime, time
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -135,3 +135,29 @@ class AdminItemOut(BaseModel):
     is_active: bool
     variants: list[VariantOut]
     availability: list[BranchAvailabilityOut]
+
+class BranchSales(BaseModel):
+    branch_id: int
+    branch_name: str
+    orders: int
+    sales: int
+
+
+class TopItem(BaseModel):
+    item_name: str
+    quantity: int
+    sales: int
+
+
+class DailyReport(BaseModel):
+    report_date: date
+    orders: int
+    cancelled_orders: int
+    total_sales: int
+    paid_amount: int
+    unpaid_amount: int
+    dine_in_orders: int
+    parcel_orders: int
+    branches: list[BranchSales]
+    top_items: list[TopItem]
+    

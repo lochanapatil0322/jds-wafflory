@@ -88,3 +88,50 @@ class OrderStatusUpdate(BaseModel):
 class AdminOrderOut(OrderOut):
     branch_id: int
     customer_phone: str
+
+class BranchAvailabilityOut(BaseModel):
+    branch_id: int
+    is_available: bool
+
+
+class AvailabilityUpdate(BaseModel):
+    branch_id: int
+    item_id: int
+    is_available: bool
+
+
+class PriceUpdate(BaseModel):
+    price: int = Field(ge=1, le=5000)
+
+
+class VariantIn(BaseModel):
+    label: str = Field(min_length=1, max_length=50)
+    price: int = Field(ge=1, le=5000)
+
+
+class ItemCreate(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    category_id: int
+    name: str = Field(min_length=2, max_length=100)
+    description: str | None = Field(default=None, max_length=255)
+    variants: list[VariantIn] = Field(min_length=1, max_length=4)
+
+
+class ItemUpdate(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    name: str | None = Field(default=None, min_length=2, max_length=100)
+    description: str | None = Field(default=None, max_length=255)
+    is_active: bool | None = None
+
+
+class AdminItemOut(BaseModel):
+    id: int
+    category_id: int
+    category_name: str
+    name: str
+    description: str | None
+    is_active: bool
+    variants: list[VariantOut]
+    availability: list[BranchAvailabilityOut]

@@ -61,4 +61,24 @@ export const setOrderStatus = (orderId, status) =>
 export const markOrderPaid = (orderId) =>
     api.patch(`/admin/orders/${orderId}/paid`).then((res) => res.data)
 
+
+   export const getAdminMenu = () => api.get('/admin/menu').then((res) => res.data)
+
+   export const setAvailability = (branchId, itemId, isAvailable) =>
+     api
+       .patch('/admin/availability', {
+         branch_id: branchId,
+         item_id: itemId,
+         is_available: isAvailable,
+       })
+       .then((res) => res.data)
+
+   export const setPrice = (variantId, price) =>
+     api.patch(`/admin/variants/${variantId}/price`, { price }).then((res) => res.data)
+
+   export const createItem = (data) => api.post('/admin/items', data).then((res) => res.data)
+
+   export const updateItem = (itemId, data) =>
+     api.patch(`/admin/items/${itemId}`, data).then((res) => res.data)
+   
 export default api

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from './AuthContext'
 import { getMe } from './api'
 import LiveOrders from './LiveOrders'
+import MenuManager from './MenuManager'
 
 const TABS = [
   { id: 'orders', label: 'Live Orders', roles: ['owner', 'staff'] },
@@ -151,6 +152,8 @@ function Dashboard() {
          <main className="mx-auto max-w-5xl p-4">
            {tab === 'orders' ? (
              <LiveOrders />
+           ) : tab === 'menu' ? (
+             <MenuManager />
            ) : (
              <div className="rounded-2xl bg-white p-6 text-center text-amber-900 shadow-sm">
                <p className="text-lg font-bold">{tabs.find((t) => t.id === tab)?.label}</p>

@@ -156,11 +156,13 @@ function App() {
         {/* One big photo for the whole category, in the middle */}
         {category && CATEGORY_IMAGES[category.name] && (
           <div className="mx-auto mt-4 max-w-md rounded-3xl bg-white/80 p-4 shadow-2xl backdrop-blur-md">
-            <img
-              src={CATEGORY_IMAGES[category.name]}
-              alt={category.name}
-              className="h-44 w-full rounded-2xl object-cover sm:h-56"
-            />
+            <div className="flex h-56 items-center justify-center overflow-hidden rounded-2xl bg-amber-100 sm:h-64">
+              <img
+                src={CATEGORY_IMAGES[category.name]}
+                alt={category.name}
+                className="max-h-full max-w-full object-contain"
+              />
+            </div>
             <h2 className="mt-3 text-center text-xl font-bold text-amber-950">{category.name}</h2>
           </div>
         )}

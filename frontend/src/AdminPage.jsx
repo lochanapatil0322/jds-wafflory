@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from './AuthContext'
 import { getMe } from './api'
+import LiveOrders from './LiveOrders'
 
 const TABS = [
   { id: 'orders', label: 'Live Orders', roles: ['owner', 'staff'] },
@@ -147,12 +148,16 @@ function Dashboard() {
         </div>
       </nav>
 
-      <main className="mx-auto max-w-5xl p-4">
-        <div className="rounded-2xl bg-white p-6 text-center text-amber-900 shadow-sm">
-          <p className="text-lg font-bold">{tabs.find((t) => t.id === tab)?.label}</p>
-          <p className="mt-1 text-sm">This screen is coming in the next steps.</p>
-        </div>
-      </main>
+         <main className="mx-auto max-w-5xl p-4">
+           {tab === 'orders' ? (
+             <LiveOrders />
+           ) : (
+             <div className="rounded-2xl bg-white p-6 text-center text-amber-900 shadow-sm">
+               <p className="text-lg font-bold">{tabs.find((t) => t.id === tab)?.label}</p>
+               <p className="mt-1 text-sm">This screen is coming in the next steps.</p>
+             </div>
+           )}
+         </main>
     </div>
   )
 }

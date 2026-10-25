@@ -52,5 +52,13 @@ export const login = (phone, password) =>
   api.post('/auth/login', new URLSearchParams({ username: phone, password })).then((res) => res.data)
 
 export const getMe = () => api.get('/auth/me').then((res) => res.data)
+export const getAdminOrders = (params) =>
+    api.get('/admin/orders', { params }).then((res) => res.data)
+
+export const setOrderStatus = (orderId, status) =>
+    api.patch(`/admin/orders/${orderId}/status`, { status }).then((res) => res.data)
+
+export const markOrderPaid = (orderId) =>
+    api.patch(`/admin/orders/${orderId}/paid`).then((res) => res.data)
 
 export default api

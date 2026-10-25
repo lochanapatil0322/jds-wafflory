@@ -11,4 +11,7 @@ export const getMenu = (branchId) =>
 
 export const placeOrder = (order) => api.post('/orders', order).then((res) => res.data)
 
+export const trackOrder = (orderId, phone) =>
+  api.get(`/orders/${orderId}`, { params: { phone } }).then((res) => res.data)
+
 export default api

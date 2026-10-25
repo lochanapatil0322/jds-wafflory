@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getBranches, getMenu } from './api'
 import { useCart } from './CartContext'
+import { Link } from 'react-router-dom'
 import CartPanel from './CartPanel'
 
 // One photo per category for now. If an item has its own image_url later,
@@ -85,6 +86,12 @@ function App() {
         <p className="mt-1 text-sm font-semibold tracking-widest text-orange-300">
           CRISP • WARM • PERFECT
         </p>
+        <Link
+          to="/track"
+          className="mt-3 inline-block rounded-full bg-white/20 px-4 py-1.5 text-sm font-semibold text-amber-50 backdrop-blur-md hover:bg-white/30"
+        >
+          Track my order
+        </Link>
       </header>
 
       <main className={`mx-auto max-w-5xl px-4 ${itemCount > 0 ? 'pb-28' : 'pb-16'}`}>

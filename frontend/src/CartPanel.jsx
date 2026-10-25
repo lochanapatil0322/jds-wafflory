@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useCart } from './CartContext'
 import { placeOrder } from './api'
+import { Link } from 'react-router-dom'
 
 const PARCEL_CHARGE = 10
 const PICKUP_OPTIONS = [10, 15, 20, 30, 45, 60]
@@ -56,6 +57,11 @@ export default function CartPanel({ branch, onClose }) {
           quantity: l.quantity,
         })),
       })
+      try {
+        localStorage.setItem('lastOrder', JSON.stringify({ id: order.id, phone }))
+      } catch {
+        // storage can be blocked in private mode; tracking still works by typing the details
+      }
       setPlaced(order)
       clearCart()
     } catch (err) {
@@ -109,9 +115,15 @@ export default function CartPanel({ branch, onClose }) {
               number.
             </p>
 
+            <Link
+              to="/track"
+              className="mt-4 block w-full rounded-xl bg-orange-500 py-3 text-center font-bold text-white hover:bg-orange-600"
+            >
+              Track my order
+            </Link>
             <button
               onClick={onClose}
-              className="mt-4 w-full rounded-xl bg-orange-500 py-3 font-bold text-white hover:bg-orange-600"
+              className="mt-2 w-full rounded-xl bg-amber-200 py-3 font-bold text-amber-900 hover:bg-amber-300"
             >
               Done
             </button>

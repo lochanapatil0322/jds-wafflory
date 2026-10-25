@@ -1,13 +1,20 @@
+import secrets
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session, selectinload
 
 from .. import models, schemas
 from ..database import get_db
+from ..ratelimit import AttemptLimiter, RateLimiter
 from ..utils import closing_datetime, is_branch_open, now_ist
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
+
+order_limiter = RateLimiter(
+    30, 600, "Too many orders from this connection. Please wait a few minutes and try again."
+)
+lookup_limiter = AttemptLimiter(10, 900, "Too many wrong lookups. Please try again in 15 minutes.")
 
 PARCEL_CHARGE = 10  # rupees, per order
 MAX_ACTIVE_ORDERS_PER_PHONE = 3
@@ -40,7 +47,9 @@ def build_order_out(order: models.Order) -> schemas.OrderOut:
     )
 
 
-@router.post("", response_model=schemas.OrderOut, status_code=201)
+@router.post(
+    "", response_model=schemas.OrderOut, status_code=201, dependencies=[Depends(order_limiter)]
+)
 def place_order(data: schemas.OrderCreate, db: Session = Depends(get_db)):
     # 1. The branch must exist
     branch = db.get(models.Branch, data.branch_id)
@@ -144,10 +153,22 @@ def place_order(data: schemas.OrderCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/{order_id}", response_model=schemas.OrderOut)
-def track_order(order_id: int, phone: str, db: Session = Depends(get_db)):
+def track_order(
+    order_id: int,
+    request: Request,
+    phone: str = Query(..., max_length=15),
+    db: Session = Depends(get_db),
+):
+    lookup_limiter.check(request)
+
     order = db.get(models.Order, order_id)
-    # The same message for "no such order" and "wrong phone", so nobody can
-    # use this route to find out which order numbers exist
-    if order is None or order.customer_phone != phone.strip():
+    # compare_digest compares in constant time, so the time taken reveals nothing
+    phone_matches = order is not None and secrets.compare_digest(
+        order.customer_phone.encode(), phone.strip().encode()
+    )
+    # The same message for "no such order" and "wrong phone", so nobody can use
+    # this route to find out which order numbers exist
+    if not phone_matches:
+        lookup_limiter.record_failure(request)
         raise HTTPException(status_code=404, detail="Order not found")
     return build_order_out(order)

@@ -46,6 +46,8 @@ export default function TrackPage() {
         setError(
           'We could not find that order. Please check the order number and the phone number.',
         )
+      } else if (err.response?.status === 429) {
+        setError(err.response.data?.detail || 'Too many tries. Please wait a few minutes.')
       } else if (!quiet) {
         setError('Could not reach the server. Please try again.')
       }

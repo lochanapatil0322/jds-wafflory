@@ -1,0 +1,76 @@
+== 1. Admin routes without a login ==
+[PASS] GET /auth/me without a token is refused  (status 401)
+[PASS] GET /admin/orders without a token is refused  (status 401)
+[PASS] GET /admin/menu without a token is refused  (status 401)
+[PASS] GET /admin/reports/daily without a token is refused  (status 401)
+[PASS] PATCH /admin/orders/1/status without a token is refused  (status 401)
+[PASS] PATCH /admin/orders/1/paid without a token is refused  (status 401)
+[PASS] PATCH /admin/availability without a token is refused  (status 401)
+[PASS] PATCH /admin/variants/1/price without a token is refused  (status 401)
+[PASS] POST /admin/items without a token is refused  (status 401)
+[PASS] PATCH /admin/items/1 without a token is refused  (status 401)
+
+== 2. Fake login tokens ==
+[PASS] Token: random text is refused  (status 401)
+[PASS] Token: three random parts is refused  (status 401)
+[PASS] Token: unsigned token (alg none) is refused  (status 401)
+[PASS] Token: signed with the guessable secret 'secret' is refused  (status 401)
+[PASS] Token: signed with the guessable secret 'changeme' is refused  (status 401)
+[PASS] Token: signed with the guessable secret 'your-secret-key' is refused  (status 401)
+
+== 3. CORS and response headers ==
+[PASS] A foreign website is not allowed to read the API (CORS)  (allow-origin: None)
+[PASS] Our own website is allowed
+[PASS] Header X-Content-Type-Options is nosniff
+[PASS] Header X-Frame-Options stops other sites framing us
+[PASS] Private answers are not cached (Cache-Control: no-store)
+
+== 4. Bad input is refused ==
+[PASS] Order with quantity 500 is refused  (status 422)
+[PASS] Order with quantity 0 is refused  (status 422)
+[PASS] Order with an empty cart is refused  (status 422)
+[PASS] Order with 100 lines in the cart is refused  (status 422)
+[PASS] Order with a phone number that is too short is refused  (status 422)
+[PASS] Order with letters in the phone number is refused  (status 422)
+[PASS] Order with a 10000 character name is refused  (status 422)
+[PASS] Order with a pickup time of 7 minutes is refused  (status 422)
+[PASS] Order with the order type 'delivery' is refused  (status 422)
+[PASS] Order with a branch id that is text is refused  (status 422)
+[PASS] Broken JSON is refused without leaking code details  (status 422)
+[PASS] Order for a branch that does not exist gives 404  (status 404)
+[PASS] Order for a negative branch id gives 404  (status 404)
+
+-- No server errors on strange values --
+[PASS] GET /menu?branch_id=99999999999999999999 causes no server error  (status 422)
+[PASS] GET /menu?branch_id=-5 causes no server error  (status 404)
+[PASS] GET /menu?branch_id=1%27%20OR%20%271%27=%271 causes no server error  (status 422)
+[PASS] GET /orders/99999999999999999999?phone=9876543210 causes no server error  (status 422)
+[PASS] POST /orders causes no server error  (status 422)
+
+== 5. Orders and tracking (needs the shop to be 'open') ==
+[PASS] A price sent by the browser is ignored  (total 59, real price 59)
+[PASS] SQL text in the name is stored as plain text
+[PASS] The database still works after the SQL text
+[PASS] An item mixed with another item's price is refused  (status 400)
+[PASS] Tracking with the right phone number works  (status 200)
+[PASS] Tracking with the wrong phone number is refused  (status 404)
+[PASS] A wrong phone and a missing order give the same answer
+[PASS] Reading other people's orders by counting numbers fails  (statuses [404, 404, 404, 404, 404])
+
+== 6. Login ==
+[PASS] SQL text in the login is refused  (status 401)
+[PASS] An unknown phone number gets the plain message  (status 401)
+[PASS] A 10000 character password causes no server error  (status 401)
+[PASS] Five wrong passwords lock that phone number  (statuses [401, 401, 401, 401, 401, 429])
+
+== 7. Flooding ==
+[PASS] Too many orders from one connection are slowed down (429)
+[PASS] Too many wrong tracking tries are blocked (429)
+[PASS] Too many wrong logins from one connection are blocked (429)
+
+== 8. Deployment checks (a WARN is normal on your own computer) ==
+[WARN] The API documentation page is hidden (/docs)  (status 200)
+[WARN] The API description is hidden (/openapi.json)  (status 200)
+
+--------------------------------------------------
+PASS 54   FAIL 0   WARN 2   SKIP 0

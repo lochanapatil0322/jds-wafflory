@@ -3,6 +3,7 @@ import { useAuth } from './AuthContext'
 import { getMe } from './api'
 import LiveOrders from './LiveOrders'
 import MenuManager from './MenuManager'
+import Reports from './Reports'
 
 const TABS = [
   { id: 'orders', label: 'Live Orders', roles: ['owner', 'staff'] },
@@ -150,14 +151,17 @@ function Dashboard() {
       </nav>
 
          <main className="mx-auto max-w-5xl p-4">
-           {tab === 'orders' ? (
+           {/* All screens stay on the page, so Live Orders keeps checking for new orders
+               (and beeping) even while the owner looks at another tab */}
+           <div className={tab === 'orders' ? '' : 'hidden'}>
              <LiveOrders />
-           ) : tab === 'menu' ? (
+           </div>
+           <div className={tab === 'menu' ? '' : 'hidden'}>
              <MenuManager />
-           ) : (
-             <div className="rounded-2xl bg-white p-6 text-center text-amber-900 shadow-sm">
-               <p className="text-lg font-bold">{tabs.find((t) => t.id === tab)?.label}</p>
-               <p className="mt-1 text-sm">This screen is coming in the next steps.</p>
+           </div>
+           {auth.role === 'owner' && (
+             <div className={tab === 'reports' ? '' : 'hidden'}>
+               <Reports />
              </div>
            )}
          </main>

@@ -80,5 +80,9 @@ export const markOrderPaid = (orderId) =>
 
    export const updateItem = (itemId, data) =>
      api.patch(`/admin/items/${itemId}`, data).then((res) => res.data)
+
    
+   export const getDailyReport = (day) =>
+     api.get('/admin/reports/daily', { params: { day } }).then((res) => res.data)
+
 export default api

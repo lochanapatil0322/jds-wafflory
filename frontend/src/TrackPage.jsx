@@ -89,9 +89,9 @@ export default function TrackPage() {
         <img
           src="/images/background.jpg"
           alt=""
-          className="h-full w-full scale-105 object-cover blur-md"
+          className="h-full w-full scale-105 object-cover blur-xs"
         />
-        <div className="absolute inset-0 bg-amber-950/50" />
+        <div className="absolute inset-0 bg-amber-950/45" />
       </div>
 
       <header className="px-4 pb-4 pt-8 text-center">

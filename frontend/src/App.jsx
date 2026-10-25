@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getBranches, getMenu } from './api'
 import { useCart } from './CartContext'
-import { Link } from 'react-router-dom'
 import CartPanel from './CartPanel'
 
-// One photo per category for now. If an item has its own image_url later,
-// that photo is used instead.
+// One big photo per category. To change a photo, save a new file with the same
+// name in frontend/public/images/
 const CATEGORY_IMAGES = {
   'Waffle Pop': '/images/pop.jpg',
   'Waffle Chocolate Sandwich': '/images/sandwich.jpg',
@@ -65,14 +65,14 @@ function App() {
 
   return (
     <div className="relative isolate min-h-screen">
-      {/* Blurred photo background, fixed so it stays while you scroll */}
+      {/* Photo background, fixed so it stays while you scroll */}
       <div className="fixed inset-0 -z-10">
         <img
           src="/images/background.jpg"
           alt=""
-          className="h-full w-full scale-105 object-cover blur-md"
+          className="h-full w-full scale-105 object-cover blur-xs"
         />
-        <div className="absolute inset-0 bg-amber-950/50" />
+        <div className="absolute inset-0 bg-amber-950/45" />
       </div>
 
       {/* Header */}
@@ -153,37 +153,51 @@ function App() {
           </div>
         )}
 
-        {menu?.is_open && (
-          <p className="mt-1 text-sm text-amber-100">Tap a price to add it to your cart.</p>
+        {/* One big photo for the whole category, in the middle */}
+        {category && CATEGORY_IMAGES[category.name] && (
+          <div className="mx-auto mt-4 max-w-md rounded-3xl bg-white/80 p-4 shadow-2xl backdrop-blur-md">
+            <img
+              src={CATEGORY_IMAGES[category.name]}
+              alt={category.name}
+              className="h-44 w-full rounded-2xl object-cover sm:h-56"
+            />
+            <h2 className="mt-3 text-center text-xl font-bold text-amber-950">{category.name}</h2>
+          </div>
         )}
 
-        {/* Items */}
+        {menu?.is_open && (
+          <p className="mt-3 text-sm text-amber-100">Tap a price to add it to your cart.</p>
+        )}
+
+        {/* Items, with no photo on each card */}
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           {category?.items.map((item) => {
-            const photo = item.image_url || CATEGORY_IMAGES[category.name]
             const canOrder = menu.is_open && item.is_available
             return (
               <div
                 key={item.id}
-                className="flex gap-4 rounded-2xl bg-white/80 p-3 shadow-lg backdrop-blur-md"
+                className="flex items-center gap-3 rounded-2xl bg-white/85 p-3 shadow-lg backdrop-blur-md"
               >
-                <img
-                  src={photo}
-                  alt={item.name}
-                  loading="lazy"
-                  className={`h-24 w-24 shrink-0 rounded-xl object-cover ${
-                    item.is_available ? '' : 'grayscale'
-                  }`}
-                />
+                {/* Only items that have their own photo show a small picture */}
+                {item.image_url && (
+                  <img
+                    src={item.image_url}
+                    alt={item.name}
+                    loading="lazy"
+                    className={`h-16 w-16 shrink-0 rounded-xl object-cover ${
+                      item.is_available ? '' : 'grayscale'
+                    }`}
+                  />
+                )}
                 <div className="flex-1">
                   <div className="flex items-start justify-between gap-2">
-                    <h2
+                    <h3
                       className={`font-bold leading-tight text-amber-950 ${
                         item.is_available ? '' : 'opacity-60'
                       }`}
                     >
                       {item.name}
-                    </h2>
+                    </h3>
                     {!item.is_available && (
                       <span className="shrink-0 rounded bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700">
                         Sold out

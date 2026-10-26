@@ -4,9 +4,11 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from .config import settings
 
 database_url = settings.DATABASE_URL
-# Some hosts write "postgres://", but SQLAlchemy wants "postgresql://"
+# Some hosts write "postgres://" or "postgresql://". Use the psycopg2 driver for both.
 if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
+    database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
+elif database_url.startswith("postgresql://"):
+    database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
 
 if database_url.startswith("sqlite"):
     # Your local file database

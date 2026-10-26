@@ -53,3 +53,31 @@ class AttemptLimiter:
         self._recent(request).append(time.monotonic())
         if len(self.failures) > 5000:
             self.failures.clear()
+
+
+
+class KeyedAttemptLimiter:
+    """Counts FAILED attempts per key (for example per order number),
+    whoever the visitor is, and blocks the key after too many failures."""
+
+    def __init__(self, max_failures: int, per_seconds: int, message: str):
+        self.max_failures = max_failures
+        self.per_seconds = per_seconds
+        self.message = message
+        self.failures: dict[str, deque] = defaultdict(deque)
+
+    def _recent(self, key) -> deque:
+        now = time.monotonic()
+        recent = self.failures[str(key)]
+        while recent and now - recent[0] > self.per_seconds:
+            recent.popleft()
+        return recent
+
+    def check(self, key) -> None:
+        if len(self._recent(key)) >= self.max_failures:
+            raise HTTPException(status_code=429, detail=self.message)
+
+    def record_failure(self, key) -> None:
+        self._recent(key).append(time.monotonic())
+        if len(self.failures) > 5000:
+            self.failures.clear()

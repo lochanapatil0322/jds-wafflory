@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from .. import models, schemas
 from ..database import get_db
-from ..ratelimit import AttemptLimiter, RateLimiter
+from ..ratelimit import AttemptLimiter, KeyedAttemptLimiter, RateLimiter
 from ..utils import closing_datetime, is_branch_open, now_ist
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
@@ -15,6 +15,9 @@ order_limiter = RateLimiter(
     30, 600, "Too many orders from this connection. Please wait a few minutes and try again."
 )
 lookup_limiter = AttemptLimiter(10, 900, "Too many wrong lookups. Please try again in 15 minutes.")
+order_lookup_limiter = KeyedAttemptLimiter(
+    8, 900, "Too many wrong tries for this order. Please try again in 15 minutes."
+)
 
 PARCEL_CHARGE = 10  # rupees, per order
 MAX_ACTIVE_ORDERS_PER_PHONE = 3
@@ -160,6 +163,7 @@ def track_order(
     db: Session = Depends(get_db),
 ):
     lookup_limiter.check(request)
+    order_lookup_limiter.check(order_id)
 
     order = db.get(models.Order, order_id)
     # compare_digest compares in constant time, so the time taken reveals nothing
@@ -170,5 +174,6 @@ def track_order(
     # this route to find out which order numbers exist
     if not phone_matches:
         lookup_limiter.record_failure(request)
+        order_lookup_limiter.record_failure(order_id)
         raise HTTPException(status_code=404, detail="Order not found")
     return build_order_out(order)

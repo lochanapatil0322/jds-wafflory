@@ -3,4 +3,3 @@ Disallow: /admin
 Disallow: /track
 Allow: /
 
-Sitemap: https://jds-wafflory.jdswafflehub.workers.dev/sitemap.xml
